@@ -1,0 +1,37 @@
+---
+# task to get APIC field
+- name: APIC query
+  aci_rest:
+    host: "{{ apic }}"
+    username: "{{ systemID }}"
+    certificate_name: "{{ systemID }}.crt"
+    private_key: "{{ privateKey }}"
+    validate_certs: no
+    path: "/api/node/mo/comp/prov-Kubernetes/ctrlr-[{{ systemID }}]-{{ systemID }}/injcont/info.json?query-target=children"
+    method: get
+    use_proxy: no
+    output_level: debug
+  register: result
+
+- name: set fact
+  set_fact: inputFileString="{{result['imdata'][0]['vmmInjectedClusterDetails']['attributes']['accProvisionInput']}}"
+
+- name: String to yaml
+  script: "scripts/process_string_to_yaml.py"
+  args:
+    executable: /usr/bin/python3
+  environment:
+    INPUTSTRING: "{{ inputFileString }}"
+    INPUTFILEPATH: "{{ inputFilePath }}"
+  register: res1
+
+- debug:
+    msg: "{{res1}}"
+
+- name: Run acc-provision command to generate new acicnioperator CR
+  shell: "acc-provision -c {{ inputFilePath }} -f {{ flavor}} -r {{ acicnioperatorCRPath }}"
+
+- name: Run test k8s command
+  k8s:
+    state: present
+    src: "{{ acicnioperatorCRPath }}"

@@ -1,0 +1,5 @@
+---
+- version: v1alpha1
+  group: aci.accprov.com
+  kind: AccProvision
+  role: accprovision

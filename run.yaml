@@ -1,0 +1,10 @@
+- hosts: localhost
+  vars:
+    systemID: kube
+    apic: 172.28.184.140
+    flavor: kubernetes-1.19
+    inputFilePath: /tmp/data.yaml
+    acicnioperatorCRPath: /tmp/cr.yaml
+    privateKey: "/home/noiro/user-{{ systemID }}.key"
+  roles:
+    - accprovision
