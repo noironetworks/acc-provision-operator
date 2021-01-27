@@ -1,0 +1,61 @@
+# This playbook looks at the current resourceVersion of the accprovisioninput CR and runs the operator flow if the CR has changed
+
+- name: Extract the name of the watched CR
+  vars:
+    msg: "{{ hostvars['localhost']['_aci_ctrl_accprovisioninput']['metadata']['name'] | to_nice_json }}"
+  set_fact:
+    cr_name_raw: "{{ msg.split('\n') }}"
+
+- name: Extract the resourceVersion of the watched CR
+  vars:
+    msg: "{{ hostvars['localhost']['_aci_ctrl_accprovisioninput']['metadata']['resourceVersion'] | to_nice_json }}"
+  set_fact:
+    cr_version_raw: "{{ msg.split('\n') }}"
+
+- name: Strip quotes from the name and resourceVersion to get correct string
+  set_fact:
+    cr_name: "{{ cr_name_raw[0][1:-1] }}"
+    cr_version: "{{ cr_version_raw[0][1:-1] }}"
+
+- name: Create directory for acc-provision run
+  file:
+    path: "{{ acc_provision_dir_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Check if resourceVersion file exists
+  stat:
+    path: "/tmp/acc_provision/version"
+  register: file_present
+
+- name: Get current resourceVersion if version file exists
+  set_fact:
+    old_version: "{{ lookup('file', '/tmp/acc_provision/version') }}"
+  when: file_present.stat.exists
+
+- name: Create resourceVersion file if it doesn't exist
+  file:
+    path: /tmp/acc_provision/version
+    state: touch
+  when: not file_present.stat.exists
+
+- name: Set old resourceVersion to empty string if no cached value exists
+  set_fact:
+    old_version: ""
+  when: not file_present.stat.exists
+
+- name: Old resourceVersion value
+  debug:
+    msg: "{{ old_version }}"
+
+- name: Get required accprovisioninput CR name
+  set_fact:
+    acc_provision_input_cr_name: "{{ lookup('env', 'ACC_PROVISION_INPUT_CR_NAME') }}"
+
+- name: Cache the new resourceVersion
+  copy: content="{{ cr_version }}" dest='/tmp/acc_provision/version'
+  when: cr_name == acc_provision_input_cr_name
+
+- name: Upgrade cluster
+  include_tasks: process.yaml
+  when: cr_name == acc_provision_input_cr_name and cr_version != old_version
