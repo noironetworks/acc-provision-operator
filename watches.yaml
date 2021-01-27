@@ -1,0 +1,9 @@
+---
+# Use the 'create api' subcommand to add watches to this file.
+- version: v1alpha1
+  group: aci.ctrl
+  kind: AccProvisionInput
+  role: accprovision
+  snakeCaseParameters: false
+  manageStatus: False
+# +kubebuilder:scaffold:watch
