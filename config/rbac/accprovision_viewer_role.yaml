@@ -1,0 +1,20 @@
+# permissions for end users to view accprovisions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: accprovision-viewer-role
+rules:
+- apiGroups:
+  - aci.accprov
+  resources:
+  - accprovisions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - aci.accprov
+  resources:
+  - accprovisions/status
+  verbs:
+  - get

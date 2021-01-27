@@ -1,0 +1,8 @@
+apiVersion: aci.accprov/v1alpha1
+kind: AccProvision
+metadata:
+  name: accprovision-sample
+  namespace: aci-containers-system
+spec:
+  acc_provision_input:
+    deployment_operator: true
