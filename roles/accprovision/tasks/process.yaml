@@ -1,0 +1,67 @@
+---
+- name: Create temporary directory for acc-provision run
+  file:
+    path: "{{ acc_provision_dir_path }}"
+    state: directory
+    mode: '0777'
+
+- name: Get acc-provision configmap
+  k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: acc-provision-config
+    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
+  register: cmap_data
+
+- name: Set fact
+  set_fact:
+    cmap_content: "{{ cmap_data['resources'][0]}}"
+
+- name: Write cmap YAML
+  copy:
+    dest: "{{ acc_provision_dir_path }}/cmap.yaml"
+    content: "{{ cmap_content }}"
+
+- name: Set input YAML
+  set_fact:
+    cmap_input: "{{ cmap_data['resources'][0]['data']['spec'] }}"
+
+- name: Compute acc-provision input file
+  script: "scripts/process_string_to_yaml.py"
+  args:
+    executable: /usr/bin/python3
+  environment:
+    CRDINPUT: "{{ acc_provision_input }}"
+    CONFIGMAP_INPUT_FILE: "{{ acc_provision_dir_path }}/cmap.yaml"
+    ACCPROVDIR: "{{ acc_provision_dir_path }}"
+    ACCPROVFILE: "{{ acc_provision_file_name }}"
+
+- name: Delete the configmap
+  k8s:
+    state: absent
+    api_version: v1
+    kind: ConfigMap
+    name: acc-provision-config
+    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
+    wait: yes
+
+- name: Create new configmap
+  k8s:
+    state: present
+    force: yes
+    src: "{{ acc_provision_dir_path }}/cmap.yaml"
+
+- name: Generate acicnioperator CR
+  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -r {{ acicnioperator_cr }} --operator-mode True"
+  args:
+    chdir: "{{ acc_provision_dir_path }}"
+
+- name: Run k8s command to apply acicnioperator CR
+  k8s:
+    state: present
+    src: "{{ acc_provision_dir_path }}/{{ acicnioperator_cr }}"
+
+- name: Delete acioperator cr file
+  file:
+    path: "{{ acc_provision_dir_path }}/{{ acicnioperator_cr }}"
+    state: absent
