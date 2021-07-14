@@ -5,4 +5,5 @@
   kind: AccProvisionInput
   role: accprovision
   snakeCaseParameters: false
+  manageStatus: False
 # +kubebuilder:scaffold:watch

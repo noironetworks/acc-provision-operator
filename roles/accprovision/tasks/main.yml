@@ -1,68 +1,62 @@
----
+- name: Prinmt name ----------------------------
+  vars:
+    msg: "{{ hostvars['localhost']['_aci_ctrl_accprovisioninput']['metadata']['name'] | to_nice_json }}"
+  set_fact:
+    cr_namee: "{{ msg.split('\n') }}"
+
+- name: Prinmt name ----------------------------
+  vars:
+    msg: "{{ hostvars['localhost']['_aci_ctrl_accprovisioninput']['metadata']['resourceVersion'] | to_nice_json }}"
+  set_fact:
+    cr_versionn: "{{ msg.split('\n') }}"
+
+- name: strip quotes
+  set_fact:
+    cr_name: "{{ cr_namee[0][1:-1] }}"
+    cr_version: "{{ cr_versionn[0][1:-1] }}"
+
+- name: print the CR name +++++++++++++
+  debug:
+    msg: "{{ cr_name }}"
+
+- name: print the CR resourceVersion
+  debug:
+    msg: "{{ cr_version }}"
+
 - name: Create temporary directory for acc-provision run
   file:
     path: "{{ acc_provision_dir_path }}"
     state: directory
     mode: '0777'
 
-- name: Get acc-provision configmap
-  k8s_info:
-    api_version: v1
-    kind: ConfigMap
-    name: acc-provision-config
-    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
-  register: cmap_data
+- name: check if file exists
+  stat:
+    path: "/tmp/acc_provision/version"
+  register: file_present
 
-- name: Set fact
+- name: Get current resourceVersion set
   set_fact:
-    cmap_content: "{{ cmap_data['resources'][0]}}"
+    current_version: "{{ lookup('file', '/tmp/acc_provision/version') }}"
+  when: file_present.stat.exists
 
-- name: Write cmap YAML
-  copy:
-    dest: "{{ acc_provision_dir_path }}/cmap.yaml"
-    content: "{{ cmap_content }}"
-
-- name: Set input YAML
-  set_fact:
-    cmap_input: "{{ web_service['resources'][0]['data']['spec'] }}"
-
-- name: Compute acc-provision input file
-  script: "scripts/process_string_to_yaml.py"
-  args:
-    executable: /usr/bin/python3
-  environment:
-    CRDINPUT: "{{ acc_provision_input }}"
-    ACI_OPERATOR_CONFIG_PATH: "{{ aci_operator_config_path }}"
-    CONFIGMAP_INPUT_FILE: "{{ acc_provision_dir_path }}/cmap.yaml"
-    ACCPROVDIR: "{{ acc_provision_dir_path }}"
-    ACCPROVFILE: "{{ acc_provision_file_name }}"
-
-- name: Delete the configmap
-  k8s:
-    state: absent
-    api_version: v1
-    kind: ConfigMap
-    name: acc-provision-config
-    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
-    wait: yes
-
-- name: Create new configmap
-  k8s:
-    state: present
-    force: yes
-    src: "{{ acc_provision_dir_path }}/cmap.yaml"
-
-- name: Generate acicnioperator CR
-  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -r {{ acicnioperator_cr }} --operator-mode True"
-  args:
-    chdir: "{{ acc_provision_dir_path }}"
-
-- name: Run k8s command to apply acicnioperator CR
-  k8s:
-    state: present
-    src: "{{ acc_provision_dir_path }}/{{ acicnioperator_cr }}"
-
-- name: Delete acioperator cr file
+- name: create file
   file:
-    path: "{{ acc_provision_dir_path }}/{{ acicnioperator_cr }}"
-    state: absent
+    path: /tmp/acc_provision/version
+    state: touch
+  when: not file_present.stat.exists
+
+- name: default version
+  set_fact:
+    current_version: ""
+  when: not file_present.stat.exists
+
+- name: print the old CR resourceVersion
+  debug:
+    msg: "{{ current_version }}"
+
+- name: cache the new resourceVersion
+  copy: content="{{ cr_version }}" dest='/tmp/acc_provision/version'
+  when: cr_name == "accprovisioninput"
+
+- include_tasks: process.yaml
+  when: cr_name == "accprovisioninput" and cr_version != current_version
