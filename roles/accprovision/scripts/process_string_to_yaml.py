@@ -16,7 +16,10 @@ def main():
         yaml_cmap = input_dict['acc_provision_input']
     crd_input = os.getenv('CRDINPUT')
     yaml_crd = yaml.safe_load(crd_input)
-    deep_merge(yaml_crd, yaml_cmap)
+
+    crd_definition = os.getenv('CRD_DEFINITION')
+    crd_definition = yaml.safe_load(crd_definition) 
+    deep_merge(yaml_crd, yaml_cmap, crd_definition)
 
     # Write configmap file
     input_dict['acc_provision_input'] = yaml_crd
@@ -37,13 +40,17 @@ def main():
         yaml.dump(yaml_crd, outfile, default_flow_style=False)
     return 0
 
-def deep_merge(override, default):
+def deep_merge(override, default, crd_definition):
     if isinstance(override, dict) and isinstance(default, dict):
         for k, v in default.items():
             if k not in override:
-                override[k] = v
+                if k not in crd_definition.keys():
+                    override[k] = v
             else:
-                override[k] = deep_merge(override[k], v)
+                if 'properties' in crd_definition[k].keys():
+                    override[k] = deep_merge(override[k], v, crd_definition[k]['properties'])
+                else:
+                    override[k] = deep_merge(override[k], v, crd_definition)
     return copy.deepcopy(override)
 
 if __name__ == "__main__":
