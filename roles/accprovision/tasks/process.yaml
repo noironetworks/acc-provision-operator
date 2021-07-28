@@ -64,17 +64,12 @@
     force: yes
     src: "{{ acc_provision_dir_path }}/cmap.yaml"
 
-- name: Generate acicnioperator CR
-  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -r {{ acicnioperator_cr }} --operator-mode True"
+- name: Generate new deployment yaml
+  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ acicnideployment }} --operator-mode True"
   args:
     chdir: "{{ acc_provision_dir_path }}"
 
-- name: Run k8s command to apply acicnioperator CR
+- name: Run k8s command to apply deployment file
   k8s:
     state: present
-    src: "{{ acc_provision_dir_path }}/{{ acicnioperator_cr }}"
-
-- name: Delete acioperator cr file
-  file:
-    path: "{{ acc_provision_dir_path }}/{{ acicnioperator_cr }}"
-    state: absent
+    src: "{{ acc_provision_dir_path }}/{{ acicnideployment }}"
