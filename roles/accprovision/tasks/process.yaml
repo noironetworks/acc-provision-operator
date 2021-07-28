@@ -1,10 +1,4 @@
 ---
-- name: Create temporary directory for acc-provision run
-  file:
-    path: "{{ acc_provision_dir_path }}"
-    state: directory
-    mode: '0777'
-
 - name: Get acc-provision configmap
   k8s_info:
     api_version: v1
@@ -33,7 +27,8 @@
     name: accprovisioninputs.aci.ctrl
   register: raw_crd
 
-- name: print
+# This task picks the first schema defined under the CRD
+- name: Get crd definition from raw k8s resource
   set_fact:
     crd_definition: "{{ raw_crd['resources'][0]['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']['acc_provision_input']['properties'] }}"
 
@@ -47,7 +42,6 @@
     CONFIGMAP_INPUT_FILE: "{{ acc_provision_dir_path }}/cmap.yaml"
     ACCPROVDIR: "{{ acc_provision_dir_path }}"
     ACCPROVFILE: "{{ acc_provision_file_name }}"
-  register: hello
 
 - name: Delete the configmap
   k8s:
@@ -65,11 +59,11 @@
     src: "{{ acc_provision_dir_path }}/cmap.yaml"
 
 - name: Generate new deployment yaml
-  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ acicnideployment }} --operator-mode True"
+  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True"
   args:
     chdir: "{{ acc_provision_dir_path }}"
 
 - name: Run k8s command to apply deployment file
   k8s:
     state: present
-    src: "{{ acc_provision_dir_path }}/{{ acicnideployment }}"
+    src: "{{ acc_provision_dir_path }}/{{ aci_cni_deployment_file }}"

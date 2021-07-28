@@ -2,4 +2,4 @@
 # defaults file for AccProvision
 acc_provision_dir_path: /tmp/acc_provision
 acc_provision_file_name: acc_provision_input.yaml
-acicnideployment: deploy.yaml
+aci_cni_deployment_file: deploy.yaml

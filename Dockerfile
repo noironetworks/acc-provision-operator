@@ -11,10 +11,9 @@ RUN yum install git -y
 RUN git clone --single-branch --branch  newacioperator-acini  https://github.com/noironetworks/acc-provision.git
 RUN cd acc-provision/provision && python3 setup.py install
 
-USER 1001
 ENV http_proxy=''
 ENV https_proxy=''
-
+USER 1001
 COPY watches.yaml ${HOME}/watches.yaml
 COPY roles/ ${HOME}/roles/
 COPY playbooks/ ${HOME}/playbooks/
