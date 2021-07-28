@@ -55,7 +55,6 @@
 - name: Create new configmap
   k8s:
     state: present
-    force: yes
     src: "{{ acc_provision_dir_path }}/cmap.yaml"
 
 - name: Generate new deployment yaml

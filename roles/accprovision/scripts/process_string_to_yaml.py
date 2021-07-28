@@ -29,6 +29,7 @@ def main():
     cmap['metadata'].pop('creationTimestamp', None)
     cmap['metadata'].pop('resourceVersion', None)
     cmap['metadata'].pop('uid', None)
+    cmap['metadata'].pop('selfLink', None)
     with open(cmap_input_path, 'w') as outfile:
         json.dump(cmap, outfile)
 
