@@ -52,11 +52,16 @@
     namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
     wait: yes
 
+- name: pause for 10 sec
+  pause:
+    seconds: 10
+
 - name: Create new configmap
   k8s:
     state: present
     force: yes
     src: "{{ acc_provision_dir_path }}/cmap.yaml"
+    wait: yes
 
 - name: Generate new deployment yaml
   shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True"
