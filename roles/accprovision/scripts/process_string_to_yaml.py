@@ -24,12 +24,12 @@ def main():
     # Write configmap file
     input_dict['acc_provision_input'] = yaml_crd
     cmap['data']['spec'] = json.dumps(input_dict)
-    cmap['metadata'].pop('managedFields', None)
-    cmap['metadata'].pop('annotations', None)
-    cmap['metadata'].pop('creationTimestamp', None)
-    cmap['metadata'].pop('resourceVersion', None)
-    cmap['metadata'].pop('uid', None)
-    cmap['metadata'].pop('selfLink', None)
+    #cmap['metadata'].pop('managedFields', None)
+    #cmap['metadata'].pop('annotations', None)
+    #cmap['metadata'].pop('creationTimestamp', None)
+    #cmap['metadata'].pop('resourceVersion', None)
+    #cmap['metadata'].pop('uid', None)
+    #cmap['metadata'].pop('selfLink', None)
     with open(cmap_input_path, 'w') as outfile:
         json.dump(cmap, outfile)
 
