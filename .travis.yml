@@ -1,0 +1,9 @@
+# Reference: https://v1-0-x.sdk.operatorframework.io/docs/contribution-guidelines/testing/travis-build/
+#
+sudo: required
+services: docker
+language: python
+install:
+  - pip3 install docker molecule openshift jmespath
+script:
+  - make docker-build
