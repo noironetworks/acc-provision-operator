@@ -1,0 +1,74 @@
+---
+- name: Get acc-provision configmap
+  k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: acc-provision-config
+    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
+  register: cmap_data
+
+- name: Set fact
+  set_fact:
+    cmap_content: "{{ cmap_data['resources'][0]}}"
+
+- name: Write cmap YAML
+  copy:
+    dest: "{{ acc_provision_dir_path }}/cmap.yaml"
+    content: "{{ cmap_content }}"
+
+- name: Set input YAML
+  set_fact:
+    cmap_input: "{{ cmap_data['resources'][0]['data']['spec'] }}"
+
+- name: Get CRD definition for accprovisioninput
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: CustomResourceDefinition
+    name: accprovisioninputs.aci.ctrl
+  register: raw_crd
+
+# This task picks the first schema defined under the CRD
+- name: Get crd definition from raw k8s resource
+  set_fact:
+    crd_definition: "{{ raw_crd['resources'][0]['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']['acc_provision_input']['properties'] }}"
+
+- name: Compute acc-provision input file
+  script: "scripts/process_string_to_yaml.py"
+  args:
+    executable: /usr/bin/python3
+  environment:
+    CRDINPUT: "{{ acc_provision_input }}"
+    CRD_DEFINITION: "{{ crd_definition }}"
+    CONFIGMAP_INPUT_FILE: "{{ acc_provision_dir_path }}/cmap.yaml"
+    ACCPROVDIR: "{{ acc_provision_dir_path }}"
+    ACCPROVFILE: "{{ acc_provision_file_name }}"
+
+- name: Delete the configmap
+  k8s:
+    state: absent
+    api_version: v1
+    kind: ConfigMap
+    name: acc-provision-config
+    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
+    wait: yes
+
+- name: Wait 20s for sync
+  pause:
+    seconds: 20
+
+- name: Create new configmap
+  k8s:
+    state: present
+    force: yes
+    src: "{{ acc_provision_dir_path }}/cmap.yaml"
+    wait: yes
+
+- name: Generate new deployment yaml
+  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True"
+  args:
+    chdir: "{{ acc_provision_dir_path }}"
+
+- name: Run k8s command to apply deployment file
+  k8s:
+    state: present
+    src: "{{ acc_provision_dir_path }}/{{ aci_cni_deployment_file }}"
