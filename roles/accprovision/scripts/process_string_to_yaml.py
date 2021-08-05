@@ -21,19 +21,6 @@ def main():
     crd_definition = yaml.safe_load(crd_definition) 
     deep_merge(yaml_crd, yaml_cmap, crd_definition)
 
-    # Write configmap file
-    input_dict['acc_provision_input'] = yaml_crd
-    cmap['data']['spec'] = json.dumps(input_dict)
-    cmap['metadata'].pop('managedFields', None)
-    cmap['metadata'].pop('annotations', None)
-    cmap['metadata'].pop('creationTimestamp', None)
-    cmap['metadata'].pop('resourceVersion', None)
-    cmap['metadata'].pop('uid', None)
-    cmap['metadata'].pop('selfLink', None)
-    with open(cmap_input_path, 'w') as outfile:
-        json.dump(cmap, outfile)
-
-    # Write acc_provision_input to file
     acc_prov_file_path = os.path.join(os.getenv('ACCPROVDIR'), os.getenv('ACCPROVFILE'))
     with open(acc_prov_file_path, 'w') as outfile:
         yaml.dump(yaml_crd, outfile, default_flow_style=False)
