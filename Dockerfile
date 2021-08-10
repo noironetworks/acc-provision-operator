@@ -1,4 +1,4 @@
-FROM quay.io/operator-framework/ansible-operator:v1.3.0
+FROM quay.io/operator-framework/ansible-operator:v1.10.1
 ARG ACC_PROVISION_REPO_BRANCH
 ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
 
