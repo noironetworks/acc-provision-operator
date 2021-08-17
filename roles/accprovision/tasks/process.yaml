@@ -51,10 +51,10 @@
     name: acc-provision-config
     namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
     wait: yes
-
-- name: Wait 20s for sync
-  pause:
-    seconds: 20
+  register: k8s_result_cmap
+  until: k8s_result_cmap is not failed
+  retries: 5
+  delay: 30
 
 - name: Generate new deployment yaml
   shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True"
@@ -65,7 +65,7 @@
   k8s:
     state: present
     src: "{{ acc_provision_dir_path }}/{{ aci_cni_deployment_file }}"
-
-- name: Wait 20s for sync
-  pause:
-    seconds: 20
+  register: k8s_result
+  until: k8s_result is not failed
+  retries: 5
+  delay: 30
