@@ -33,7 +33,7 @@
     crd_definition: "{{ raw_crd['resources'][0]['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']['acc_provision_input']['properties'] }}"
 
 - name: Compute acc-provision input file
-  script: "scripts/process_string_to_yaml.py"
+  script: "scripts/compute_input_yaml.py"
   args:
     executable: /usr/bin/python3
   environment:
@@ -42,19 +42,6 @@
     CONFIGMAP_INPUT_FILE: "{{ acc_provision_dir_path }}/cmap.yaml"
     ACCPROVDIR: "{{ acc_provision_dir_path }}"
     ACCPROVFILE: "{{ acc_provision_file_name }}"
-
-- name: Delete the configmap
-  k8s:
-    state: absent
-    api_version: v1
-    kind: ConfigMap
-    name: acc-provision-config
-    namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
-    wait: yes
-  register: k8s_result_cmap
-  until: k8s_result_cmap is not failed
-  retries: 5
-  delay: 30
 
 - name: Generate new deployment yaml
   shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True"
