@@ -6,4 +6,5 @@
   role: accprovision
   snakeCaseParameters: false
   manageStatus: False
+  reconcilePeriod: 60s
 # +kubebuilder:scaffold:watch

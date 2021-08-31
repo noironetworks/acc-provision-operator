@@ -6,6 +6,9 @@
     name: acc-provision-config
     namespace: "{{ lookup('env', 'WATCH_NAMESPACE') }}"
   register: cmap_data
+  until: cmap_data is not failed
+  retries: 5
+  delay: 30
 
 - name: Set fact
   set_fact:
