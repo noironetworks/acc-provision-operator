@@ -51,10 +51,10 @@
 
 - name: Get aci-containers-config-version from acc-provision-operator configmap
   set_fact:
-    aci-containers-config-version: "{{ cmap_data['resources'][0]['metadata']['labels']['aci-containers-config-version'] }}"
+    aci_containers_config_version: "{{ cmap_data['resources'][0]['metadata']['labels']['aci-containers-config-version'] }}"
 
 - name: Generate new deployment yaml
-  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True --version-token {{ aci-containers-config-version }}"
+  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }} --operator-mode True --version-token {{ aci_containers_config_version }}"
   args:
     chdir: "{{ acc_provision_dir_path }}"
 
