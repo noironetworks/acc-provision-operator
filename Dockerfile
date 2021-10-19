@@ -1,7 +1,15 @@
 FROM quay.io/operator-framework/ansible-operator:v1.10.1
 ARG ACC_PROVISION_REPO_BRANCH
 ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
-
+# Required OpenShift Labels
+LABEL name="ACI CNI Operator" \
+vendor="Cisco" \
+version="v1.0.0" \
+release="1" \
+summary="This is an ACI CNI Operator." \
+description="This operator will deploy a single instance of ACI CNI Operator."
+# Required Licenses
+COPY docker/licenses /licenses
 # Export http and https proxy here if building locally for dev
 COPY requirements.yml ${HOME}/requirements.yml
 USER 0
