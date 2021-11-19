@@ -1,0 +1,94 @@
+apiVersion: aci.ctrl/v1alpha1
+kind: AccProvisionInput
+metadata:
+  name: accprovisioninput
+  namespace: net-operator-controller
+spec:
+  acc_provision_input:
+    aci_config:
+      system_id: dummy
+      apic_hosts:
+        - dummy
+      apic_login:
+        username: dummy
+        password: dummy
+      l3out:
+        name: dummy
+        external_networks:
+            - dummy
+      sync_login:
+        certfile: dummy
+        keyfile: dummy
+      client_ssl: False
+    net_config:
+      node_subnet: dummy
+      pod_subnet: dummy
+      extern_dynamic: dummy
+      kubeapi_vlan: 0
+      infra_vlan: 0
+    calico_config:
+      net_config:
+        block_size: 0
+      bgp_config:
+        bgp_secret: dummy
+      bgp_peer_config:
+        as_number: 0
+        racks: []
+    registry:
+      image_prefix: dummy
+      image_pull_secret: dummy
+    aci_cni_config:
+      ovs_memory_limit: dummy
+      use_privileged_containers: False
+      image_pull_policy: Never
+      reboot_opflex_with_ovs: dummy
+      snat_operator:
+        port_range:
+          start: 0
+          end: 0
+          ports_per_node: 0
+        contract_scope: dummy
+        disable_periodic_snat_global_info_sync: False
+      aci_config:
+        vmm_domain:
+          encap_type: dummy
+          mcast_range:
+            start: dummy
+            end: dummy
+        aep: dummy
+        vrf:
+          name: dummy
+          tenant: dummy
+      net_config:
+        interface_mtu: 0
+        extern_static: dummy
+      registry:
+        aci_containers_operator_version: dummy
+        aci_containers_controller_version: dummy
+        aci_containers_host_version: dummy
+        acc_provision_operator_version: dummy
+        aci_cni_operator_version: dummy
+        cnideploy_version: dummy
+        opflex_agent_version: dummy
+        openvswitch_version: dummy
+        gbp_version: dummy
+        network_operator_version: dummy
+      kube_config:
+          logging:
+              controller_log_level: debug
+              hostagent_log_level: debug
+              opflexagent_log_level: debug
+          istio_config:
+              install_istio: False
+              install_profile: dummy
+          multus:
+              disable: True
+          drop_log_config:
+              enable: False
+          nodepodif_config:
+              enable: False
+          sriov_config:
+              enable: False
+    profile: cko-calico
+    operator_managed_config:
+      enable_updates: False

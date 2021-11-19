@@ -1,0 +1,21 @@
+---
+- name: Create directory for acc-provision run
+  file:
+    path: "{{ acc_provision_dir_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Compute input provision file
+  script: "scripts/compute_input_provision_yaml.py"
+  args:
+    executable: /usr/bin/python3
+  environment:
+    CRDINPUT: "{{ acc_provision_input }}"
+    ACCPROVDIR: "{{ acc_provision_dir_path }}"
+    ACCPROVFILE: "{{ acc_provision_file_name }}"
+
+
+- name: Generate new deployment yaml
+  shell: "acc-provision -c {{ acc_provision_file_name }} -f {{ lookup('env', 'ACC_PROVISION_FLAVOR') }} -o {{ aci_cni_deployment_file }}"
+  args:
+    chdir: "{{ acc_provision_dir_path }}"
