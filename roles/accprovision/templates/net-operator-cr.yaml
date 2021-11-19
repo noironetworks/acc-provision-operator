@@ -1,0 +1,44 @@
+apiVersion: aci.ctrl/v1alpha1
+kind: AccProvisionInput
+metadata:
+  name: accprovisioninput
+  namespace: aci-containers-system
+spec:
+  acc_provision_input:
+    aci_config:
+      system_id: mykube
+      apic_hosts:
+      - 10.1.1.101
+      aep: kube-cluster
+      vrf:
+        name: mykube-vrf
+        tenant: common
+      l3out:
+        name: mykube_l3out
+        external_networks:
+        - mykube_extepg
+      apic_login:
+        username: dummy
+        password: dummy
+    drop_log_config: {}
+    istio_config: {}
+    kube_config: {}
+    logging: {}
+    multus: {}
+    net_config: {}
+    nodepodif_config: {}
+    registry:
+      image_prefix: quay.io/noirolabs
+      network_operator_version: test
+    sriov_config: {}
+    calico_config:
+      net_config:
+        block_size: 26
+      bgp_config:
+        bgp_secret: test
+      bgp_peer_config:
+        as_number: 64512
+        racks:
+          - [192.168.2.201, 192.168.2.202]
+          - [192.168.2.203, 192.168.2.204]
+    profile: cko-calico

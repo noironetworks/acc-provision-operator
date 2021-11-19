@@ -17,7 +17,7 @@ RUN update-crypto-policies --set LEGACY && pip3 install pyopenssl
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
 RUN yum install git -y
-RUN git clone --single-branch --branch ${ACC_PROVISION_BRANCH} https://github.com/noironetworks/acc-provision.git
+RUN git clone --single-branch --branch cko https://github.com/noironetworks/acc-provision.git
 RUN cd acc-provision/provision && python3 setup.py install
 
 USER 1001

@@ -1,3 +1,7 @@
 - name: Run script to upgrade cluster
   include_tasks: upgrade.yml
-  when: acc_provision_input['operator_managed_config'] is defined and acc_provision_input['operator_managed_config']['enable_updates'] is defined and acc_provision_input['operator_managed_config']['enable_updates'] == true
+  when: acc_provision_input['operator_managed_config'] is defined and acc_provision_input['operator_managed_config']['enable_updates'] is defined and acc_provision_input['operator_managed_config']['enable_updates'] == true and acc_provision_input['profile'] != "cko-calico"
+
+- name: Run script to deploy net-operator-controller
+  include_tasks: net-operator-controller.yml
+  when: acc_provision_input['profile'] == "cko-calico"
