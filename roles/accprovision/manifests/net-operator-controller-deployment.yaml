@@ -1,0 +1,410 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: net-operator-controller
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: net-operator-controller
+  namespace: net-operator-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    network-plugin: calico
+  name: net-operator-controller
+rules:
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  - clusterrolebindings
+  verbs:
+  - '*'
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  - namespaces
+  - configmaps
+  - secrets
+  - pods
+  - services
+  - serviceaccounts
+  - serviceaccounts/token
+  - endpoints
+  - events
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - list
+  - watch
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - daemonsets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - aci.ctrl
+  resources:
+  - accprovisioninputs
+  - accprovisioninputs/status
+  - accprovisioninputs/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - scheduling.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: net-operator-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: net-operator-controller
+subjects:
+- kind: ServiceAccount
+  name: net-operator-controller
+  namespace: net-operator-controller
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: accprovisioninputs.aci.ctrl
+spec:
+  group: aci.ctrl
+  names:
+    kind: AccProvisionInput
+    listKind: AccProvisionInputList
+    plural: accprovisioninputs
+    singular: accprovisioninput
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    schema:
+      openAPIV3Schema:
+        description: accprovisioninput defines the input configuration for ACI CNI
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AccProvisionInputSpec defines the desired spec for accprovisioninput object
+            properties:
+              acc_provision_input:
+                type: object
+                properties:
+                  operator_managed_config:
+                    type: object
+                    properties:
+                      enable_updates:
+                        type: boolean
+                  aci_config:
+                    type: object
+                    properties:
+                      system_id:
+                        type: string
+                      apic_hosts:
+                        type: array
+                        items:
+                          type: string
+                      apic_login:
+                        type: object
+                        properties:
+                          username:
+                            type: string
+                          password:
+                            type: string
+                      l3out:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          external_networks:
+                            type: array
+                            items:
+                              type: string
+                      sync_login:
+                        type: object
+                        properties:
+                          certfile:
+                            type: string
+                          keyfile:
+                            type: string
+                      client_ssl:
+                        type: boolean
+                  net_config:
+                    type: object
+                    properties:
+                      node_subnet:
+                        type: string
+                      pod_subnet:
+                        type: string
+                      extern_dynamic:
+                        type: string
+                      kubeapi_vlan:
+                        type: integer
+                      infra_vlan:
+                        type: integer
+                  registry:
+                    type: object
+                    properties:
+                      image_prefix:
+                        type: string
+                      image_pull_secret:
+                        type: string
+                  aci_cni_config:
+                    type: object
+                    properties:
+                      ovs_memory_limit:
+                        type: string
+                      use_privileged_containers:
+                        type: boolean
+                      image_pull_policy:
+                        type: string
+                      reboot_opflex_with_ovs:
+                        type: string
+                      snat_operator:
+                        type: object
+                        properties:
+                          port_range:
+                            type: object
+                            properties:
+                              start:
+                                type: integer
+                              end:
+                                type: integer
+                              ports_per_node:
+                                type: integer
+                          contract_scope:
+                            type: string
+                          disable_periodic_snat_global_info_sync:
+                            type: boolean
+                      aci_config:
+                        type: object
+                        properties:
+                          vmm_domain:
+                           type: object
+                           properties:
+                             encap_type:
+                               type: string
+                             mcast_range:
+                               type: object
+                               properties:
+                                 start:
+                                   type: string
+                                 end:
+                                   type: string
+                          aep:
+                           type: string
+                          vrf:
+                           type: object
+                           properties:
+                             name:
+                               type: string
+                             tenant:
+                               type: string
+                      net_config:
+                        type: object
+                        properties:
+                          interface_mtu:
+                            type: integer
+                          extern_static:
+                            type: string
+                      registry:
+                        type: object
+                        properties:
+                          aci_containers_operator_version:
+                            type: string
+                          aci_containers_controller_version:
+                            type: string
+                          aci_containers_host_version:
+                            type: string
+                          acc_provision_operator_version:
+                            type: string
+                          aci_cni_operator_version:
+                            type: string
+                          cnideploy_version:
+                            type: string
+                          opflex_agent_version:
+                            type: string
+                          openvswitch_version:
+                            type: string
+                          gbp_version:
+                            type: string
+                          network_operator_version:
+                            type: string
+                      kube_config:
+                        type: object
+                        properties:
+                          logging:
+                            type: object
+                            properties:
+                              controller_log_level:
+                                type: string
+                              hostagent_log_level:
+                                type: string
+                              opflexagent_log_level:
+                                type: string
+                          istio_config:
+                            type: object
+                            properties:
+                              install_istio:
+                                type: boolean
+                              install_profile:
+                                type: string
+                          multus:
+                            type: object
+                            properties:
+                              disable:
+                                type: boolean
+                          drop_log_config:
+                            type: object
+                            properties:
+                              enable:
+                                type: boolean
+                          nodepodif_config:
+                            type: object
+                            properties:
+                              enable:
+                                type: boolean
+                          sriov_config:
+                            type: object
+                            properties:
+                              enable:
+                                type: boolean
+                  calico_config:
+                    type: object
+                    properties:
+                      net_config:
+                        type: object
+                        properties:
+                          block_size:
+                            type: integer
+                      bgp_config:
+                        type: object
+                        properties:
+                          bgp_secret:
+                            type: string
+                      bgp_peer_config:
+                        type: object
+                        properties:
+                          as_number:
+                            type: integer
+                          racks:
+                            type: array
+                            items:
+                              type: array
+                              items:
+                               type: string
+                  profile:
+                    type: string
+            type: object
+          status:
+            description: AccProvisionInputStatus defines the successful completion of AccProvisionInput
+            properties:
+              status:
+                type: boolean
+            type: object
+        required:
+        - spec
+        type: object
+---
+apiVersion: v1
+data:
+  spec: "{}"
+kind: ConfigMap
+metadata:
+  name: acc-provision-config
+  namespace: net-operator-controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: net-operator-controller
+  namespace: net-operator-controller
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: net-operator-controller
+      network-plugin: aci-containers
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+      labels:
+        name: net-operator-controller
+        network-plugin: aci-containers
+      name: net-operator-controller
+      namespace: net-operator-controller
+    spec:
+      containers:
+      - env:
+        - name: ANSIBLE_GATHERING
+          value: explicit
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: ACC_PROVISION_FLAVOR
+          value: cko-calico
+        - name: ACC_PROVISION_INPUT_CR_NAME
+          value: accprovisioninput
+        image: quay.io/noirolabs/acc-provision-operator:abhishek
+        imagePullPolicy: Always
+        name: acc-provision-operator
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: net-operator-controller
+      serviceAccountName: net-operator-controller
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      volumes:
+      - configMap:
+          items:
+          - key: spec
+            path: acc-provision-operator.conf
+          name: acc-provision-config
+        name: acc-provision-config
