@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aci-operator-config
+  namespace: aci-containers-system
+data:
+  spec: |-
+    {
+        "flavor": "{{ lookup('env', 'ACC_PROVISION_FLAVOR') }}",
+        "config": "{{ aci_operator_config.stdout }}"
+    }

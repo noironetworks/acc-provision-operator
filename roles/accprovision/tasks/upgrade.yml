@@ -58,6 +58,30 @@
   args:
     chdir: "{{ acc_provision_dir_path }}"
 
+
+- name: Convert aci_cni_deployment_file to base64
+  shell: "cat {{ acc_provision_dir_path }}/{{ aci_cni_deployment_file }} | base64 -w 0"
+  register: aci_operator_config
+
+
+- name: Create the Aci Operator Conf File
+  template:
+    src: "aci-operator-conf.yaml"
+    dest: "{{ acc_provision_dir_path }}/aci-operator-conf.yaml"
+
+- wait_for:
+    path: "{{ acc_provision_dir_path }}/aci-operator-conf.yaml"
+
+- name: Run k8s command to create Aci Operator ConfigMap
+  k8s:
+    state: present
+    src: "{{ acc_provision_dir_path }}/aci-operator-conf.yaml"
+  register: config_result
+  until: config_result is not failed
+  retries: 5
+  delay: 2
+
+
 - name: Run k8s command to apply deployment file
   k8s:
     state: present
@@ -66,3 +90,7 @@
   until: k8s_result is not failed
   retries: 5
   delay: 30
+
+
+
+#
