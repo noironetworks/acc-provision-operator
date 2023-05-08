@@ -3,7 +3,25 @@
 sudo: required
 services: docker
 language: python
-install:
-  - pip3 install docker molecule openshift jmespath
-script:
-  - make docker-build
+jobs:
+  include:
+    - stage: check
+      if: tag IS NOT present
+      install:
+        - pip3 install docker molecule openshift jmespath
+      script:
+        - make docker-build
+    - stage: build-image
+      if: tag IS present
+      install:
+        - pip3 install docker molecule openshift jmespath
+      before_script:
+        - export DOCKER_BUILDKIT=1
+        - export RELEASE_TAG=6.0.3.1
+        - export UPSTREAM_ID=81c2369
+        - export EXPECTED_TAG_PREFIX=${RELEASE_TAG}
+      script:
+        - echo "Skip running UTs"
+        - git clone http://www.github.com/noironetworks/cicd -b master /tmp/cicd
+        - /tmp/cicd/travis/check-git-tag.sh; RETURN_CODE=$? ; if [ $RETURN_CODE -eq 140 ]; then travis_terminate 0; elif [ $RETURN_CODE -ne 0 ]; then travis_terminate $RETURN_CODE; fi
+        - /tmp/cicd/travis/build-push-acc-provision-operator-image.sh || travis_terminate 1
