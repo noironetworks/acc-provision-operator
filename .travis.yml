@@ -3,7 +3,18 @@
 sudo: required
 services: docker
 language: python
-install:
-  - pip3 install docker molecule openshift jmespath
-script:
-  - make docker-build
+jobs:
+  include:
+    - stage: check
+      if: tag IS NOT present
+      install:
+        - pip3 install docker molecule openshift jmespath
+      script:
+        - make docker-build
+    - stage: build-image
+      if: tag IS present
+      script:
+      - docker login -u=$QUAY_SUMIT_NOIROLABS_ROBO_USER -p=$QUAY_SUMIT_NOIROLABS_ROBO_PSWD quay.io
+      - docker build -t quay.io/noirolabs/acc-provision-operator:sumit-kmr2-test --file=Dockerfile .
+      - docker images
+      - docker push quay.io/noirolabs/acc-provision-operator:sumit-kmr2-test
