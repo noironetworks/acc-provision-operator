@@ -4,7 +4,7 @@ ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
 # Required OpenShift Labels
 LABEL name="ACI CNI Operator" \
 vendor="Cisco" \
-version="v1.0.0" \
+version="v1.1.0" \
 release="1" \
 summary="This is an ACI CNI Operator." \
 description="This operator will deploy a single instance of ACI CNI Operator."
