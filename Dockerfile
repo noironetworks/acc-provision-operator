@@ -13,7 +13,13 @@ COPY docker/licenses /licenses
 # Export http and https proxy here if building locally for dev
 COPY requirements.yml ${HOME}/requirements.yml
 USER 0
-RUN update-crypto-policies --set LEGACY && pip3 install pyopenssl
+RUN update-crypto-policies --set LEGACY && \
+   dnf -y install rust git && \
+   pip3 install --upgrade pip && \
+   pip3 install --upgrade pyyaml && \
+   pip3 install setuptools-rust && \
+   pip3 install pyopenssl && \
+   pip3 install --upgrade 'urllib3<1.27' requests
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
 RUN yum install git -y
