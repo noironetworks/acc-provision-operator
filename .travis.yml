@@ -6,22 +6,35 @@ language: python
 jobs:
   include:
     - stage: check
-      if: tag IS NOT present
       install:
-        - pip3 install docker molecule openshift jmespath
-      script:
-        - make docker-build
-    - stage: build-image
-      if: tag IS present
-      install:
-        - pip3 install docker molecule openshift jmespath pytz
+        - pip3 install jq
       before_script:
-        - export DOCKER_BUILDKIT=1
-        - export RELEASE_TAG=6.0.3.1
-        - export UPSTREAM_ID=81c2369
-        - export EXPECTED_TAG_PREFIX=${RELEASE_TAG}
+        - export USER_LOGIN=$(curl -s "https://api.travis-ci.com/v3/build/$TRAVIS_BUILD_ID" | jq -r .created_by.login)
       script:
-        - echo "Skip running UTs"
-        - git clone http://www.github.com/noironetworks/cicd -b main /tmp/cicd
-        - /tmp/cicd/travis/check-git-tag.sh; RETURN_CODE=$? ; if [ $RETURN_CODE -eq 140 ]; then travis_terminate 0; elif [ $RETURN_CODE -ne 0 ]; then travis_terminate $RETURN_CODE; fi
-        - /tmp/cicd/travis/build-push-acc-provision-operator-image.sh || travis_terminate 1
+        - echo "User who triggered the build $USER_LOGIN"
+#
+#      script:
+#        - curl "https://api.travis-ci.com/v3/build/$TRAVIS_BUILD_ID"
+#        - user_login=$(curl "https://api.travis-ci.com/v3/build/$TRAVIS_BUILD_ID" | jq -r .created_by.login)
+#        - echo "User who triggered the build $user_login"
+#      if: tag IS NOT present
+#      install:
+#        - pip3 install docker molecule openshift jmespath
+#      script:
+#        - make docker-build
+#    - stage: build-image
+#      if: tag IS present
+#      install:
+#        - pip3 install docker molecule openshift jmespath pytz
+#      before_script:
+#        - export DOCKER_BUILDKIT=1
+#        - export RELEASE_TAG=6.0.3.1
+#        - export UPSTREAM_ID=81c2369
+#        - export EXPECTED_TAG_PREFIX=${RELEASE_TAG}
+#        - export TRAVIS_COMMIT_AUTHOR=${USER}
+#      script:
+#        - echo "Skip running UTs"
+#        - echo "Author :  $TRAVIS_COMMIT_AUTHOR"
+#        - git clone http://www.github.com/noironetworks/cicd -b main /tmp/cicd
+#        - /tmp/cicd/travis/check-git-tag.sh; RETURN_CODE=$? ; if [ $RETURN_CODE -eq 140 ]; then travis_terminate 0; elif [ $RETURN_CODE -ne 0 ]; then travis_terminate $RETURN_CODE; fi
+#        - /tmp/cicd/travis/build-push-acc-provision-operator-image.sh || travis_terminate 1
