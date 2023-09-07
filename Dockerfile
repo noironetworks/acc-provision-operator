@@ -1,4 +1,4 @@
-FROM quay.io/operator-framework/ansible-operator:latest
+FROM registry.redhat.io/openshift4/ose-ansible-operator:v4.13
 ARG ACC_PROVISION_REPO_BRANCH
 ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
 # Required OpenShift Labels
@@ -15,11 +15,12 @@ COPY requirements.yml ${HOME}/requirements.yml
 USER 0
 RUN update-crypto-policies --set LEGACY && \
    dnf -y install rust git && \
+   rpm -e python3-pyyaml --nodeps &&\
    pip3 install --upgrade pip && \
    pip3 install --upgrade pyyaml && \
    pip3 install setuptools-rust && \
    pip3 install pyopenssl && \
-   pip3 install --upgrade 'urllib3<1.27' requests
+   pip3 install --upgrade requests urllib3
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
 RUN yum install git -y
