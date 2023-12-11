@@ -1,4 +1,4 @@
-FROM quay.io/operator-framework/ansible-operator:latest
+FROM quay.io/operator-framework/ansible-operator:main
 ARG ACC_PROVISION_REPO_BRANCH
 ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
 # Required OpenShift Labels
