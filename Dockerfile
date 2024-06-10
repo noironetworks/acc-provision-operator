@@ -21,6 +21,16 @@ RUN update-crypto-policies --set LEGACY && \
    pip3 install pyopenssl && \
    pip3 install requests==2.31.0 && \
    pip3 install --upgrade 'urllib3<1.27'
+# Install specific versions of vulnerable packages
+RUN dnf install -y \
+    python39-libs-3.9.19-1.module+el8.10.0+21815+bb024982 \
+    python39-setuptools-50.3.2-5.module+el8.10.0+20345+671a55aa \
+    python39-pip-wheel-20.2.4-9.module+el8.10.0+21329+8d76b841 \
+    python39-3.9.19-1.module+el8.10.0+21815+bb024982 \
+    python39-pip-20.2.4-9.module+el8.10.0+21329+8d76b841 \
+    python39-setuptools-wheel-50.3.2-5.module+el8.10.0+20345+671a55aa \
+    platform-python-3.6.8-62.el8_10 \
+    python3-libs-3.6.8-62.el8_10
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
 RUN yum install git -y
