@@ -1,5 +1,6 @@
 # Reference: https://v1-0-x.sdk.operatorframework.io/docs/contribution-guidelines/testing/travis-build/
 #
+dist: focal
 sudo: required
 services: docker
 language: python

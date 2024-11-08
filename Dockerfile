@@ -14,12 +14,13 @@ COPY docker/licenses /licenses
 COPY requirements.yml ${HOME}/requirements.yml
 USER 0
 RUN update-crypto-policies --set LEGACY && \
-   dnf -y install rust git && \
+   dnf -y install rust git python3.9 python3.9-pip python3.9-setuptools && \
    pip3 install --upgrade pip && \
    pip3 install --upgrade pyyaml && \
    pip3 install setuptools-rust && \
    pip3 install pyopenssl && \
-   pip3 install --upgrade 'urllib3<1.27' requests
+   pip3 install requests==2.31.0 && \
+   pip3 install --upgrade 'urllib3<1.27'
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
 RUN yum install git -y
