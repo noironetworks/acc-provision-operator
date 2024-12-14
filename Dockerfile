@@ -1,6 +1,8 @@
 FROM quay.io/operator-framework/ansible-operator:main
 ARG ACC_PROVISION_REPO_BRANCH
 ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
+USER 0
+RUN yum update -y && yum clean all
 # Required OpenShift Labels
 LABEL name="ACI CNI Operator" \
 vendor="Cisco" \
@@ -12,7 +14,6 @@ description="This operator will deploy a single instance of ACI CNI Operator."
 COPY docker/licenses /licenses
 # Export http and https proxy here if building locally for dev
 COPY requirements.yml ${HOME}/requirements.yml
-USER 0
 RUN update-crypto-policies --set LEGACY && pip3 install pyopenssl
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
