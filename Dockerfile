@@ -5,6 +5,7 @@ USER 0
 RUN yum update -y && yum clean all
 # Required OpenShift Labels
 LABEL name="ACI CNI Operator" \
+maintainer="Vishal Lella <vlella@cisco.com>" \
 vendor="Cisco" \
 version="v1.1.0" \
 release="1" \
