@@ -17,7 +17,7 @@ description="This operator will deploy a single instance of ACI CNI Operator."
 COPY docker/licenses /licenses
 # Export http and https proxy here if building locally for dev
 COPY requirements.yml ${HOME}/requirements.yml
-RUN update-crypto-policies --set LEGACY && pip3 install pyopenssl
+RUN pip3 install pyopenssl
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
  && chmod -R ug+rwx ${HOME}/.ansible
 RUN git clone --single-branch --branch ${ACC_PROVISION_BRANCH} https://github.com/noironetworks/acc-provision.git
