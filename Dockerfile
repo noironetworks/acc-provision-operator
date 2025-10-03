@@ -2,9 +2,9 @@ FROM quay.io/operator-framework/ansible-operator:main
 ARG ACC_PROVISION_REPO_BRANCH
 ENV ACC_PROVISION_BRANCH=${ACC_PROVISION_REPO_BRANCH:-master}
 USER 0
-RUN dnf -y update && \
-    dnf -y install git && \
-    dnf clean all
+RUN microdnf update -y && \
+    microdnf install -y git && \
+    microdnf clean all
 # Required OpenShift Labels
 LABEL name="ACI CNI Operator" \
 maintainer="Vishal Lella <vlella@cisco.com>" \
