@@ -1,6 +1,6 @@
 # Reference: https://v1-0-x.sdk.operatorframework.io/docs/contribution-guidelines/testing/travis-build/
 #
-dist: jammy
+dist: Noble
 sudo: required
 services: docker
 language: python
