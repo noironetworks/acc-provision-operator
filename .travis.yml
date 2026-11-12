@@ -1,4 +1,5 @@
-if: repo = __travis_disabled__
+# Retired CI entrypoint: GHA owns builds. This gate is independent of provider variables.
+if: "false"
 # Reference: https://v1-0-x.sdk.operatorframework.io/docs/contribution-guidelines/testing/travis-build/
 #
 dist: focal
