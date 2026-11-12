@@ -80,7 +80,17 @@ class WorkflowPolicy(unittest.TestCase):
         if self.workflow:
             return
         workflows = ROOT / '.github/workflows'
-        self.assertFalse(any(workflows.glob('*')))
+        files = list(workflows.glob('*'))
+        self.assertLessEqual({path.name for path in files}, {'ci-policy.yml'})
+        for path in files:
+            workflow = yaml.safe_load(path.read_text())
+            self.assertEqual(workflow.get('permissions'), {'contents': 'read'})
+            self.assertNotIn('secrets.', str(workflow))
+            self.assertEqual(set(workflow['jobs']), {'policy'})
+            for step in workflow['jobs']['policy']['steps']:
+                self.assertNotRegex(step.get('run', ''), r'(?i)docker|podman|buildah|twine|build-push|git\s+push')
+                if 'uses' in step:
+                    self.assertTrue(step['uses'].startswith(('actions/checkout@', 'actions/setup-python@')))
 
     def test_provider_selector_and_retagger_removed(self):
         self.assertNotIn('select-ci-provider', self.workflow_text)
